@@ -73,7 +73,7 @@ npm start
 | `patch-index.cjs` | index.js 补丁脚本 |
 | `patch-recover.cjs` | recover.js 补丁脚本 |
 | `test_translate.js` | 翻译逻辑单元测试 (29 用例) |
-| `start.bat` / `start-hidden.vbs` | Windows 启动脚本 |
+| `start.bat` | Windows 启动脚本 |
 | `setup-autostart.ps1` / `setup-autostart-user.ps1` | 开机自启动配置 |
 
 ## 翻译覆盖

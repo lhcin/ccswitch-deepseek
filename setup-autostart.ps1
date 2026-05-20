@@ -2,12 +2,12 @@
 # 设置两个代理开机自启（隐藏窗口）
 
 $scripts = @(
-    @{Name="CC DeepSeek Proxy";  Path="$env:USERPROFILE\ccswitch-deepseek\start-hidden.vbs"},
-    @{Name="CC OpenCode Proxy"; Path="$env:USERPROFILE\ccswitch-deepseek-opencode\start-hidden.vbs"}
+    @{Name="CC DeepSeek Proxy";  Path="$env:USERPROFILE\\ccswitch-deepseek\\start.bat"},
+    @{Name="CC OpenCode Proxy"; Path="$env:USERPROFILE\\ccswitch-deepseek-opencode\\start.bat"}
 )
 
 foreach ($s in $scripts) {
-    $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$($s.Path)`""
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-WindowStyle Hidden -Command `"& '$($s.Path)'`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn
     $trigger.Delay = "PT30S"
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden:$true

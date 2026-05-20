@@ -5,14 +5,14 @@ $wshell = New-Object -ComObject WScript.Shell
 $startup = [Environment]::GetFolderPath("Startup")
 
 $scripts = @(
-    @{Name="CC DeepSeek Proxy";  Path="$env:USERPROFILE\ccswitch-deepseek\start-hidden.vbs"},
-    @{Name="CC OpenCode Proxy"; Path="$env:USERPROFILE\ccswitch-deepseek-opencode\start-hidden.vbs"}
+    @{Name="CC DeepSeek Proxy";  Path="$env:USERPROFILE\\ccswitch-deepseek\\start.bat"},
+    @{Name="CC OpenCode Proxy"; Path="$env:USERPROFILE\\ccswitch-deepseek-opencode\\start.bat"}
 )
 
 foreach ($s in $scripts) {
-    $lnk = $wshell.CreateShortcut("$startup\$($s.Name).lnk")
-    $lnk.TargetPath = "wscript.exe"
-    $lnk.Arguments = "`"$($s.Path)`""
+    $lnk = $wshell.CreateShortcut("$startup\\$($s.Name).lnk")
+    $lnk.TargetPath = "powershell.exe"
+    $lnk.Arguments = "-WindowStyle Hidden -Command `"& '$($s.Path)'`""
     $lnk.WindowStyle = 7
     $lnk.Description = $s.Name
     $lnk.Save()
