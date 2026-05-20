@@ -4,15 +4,10 @@
 
 ---
 
-让 Codex CLI 和 Claude CLI 通过 DeepSeek 和 OpenCode.ai 模型运行。
+本项目为 Codex CLI 和 Claude CLI 提供协议转换代理，使它们能够对接 DeepSeek 和 OpenCode.ai。
 
-Codex 使用 OpenAI Responses API，Claude 使用 Anthropic Messages API。DeepSeek 只提供 Chat Completions API——本项目将其翻译为 Codex 所需格式。原生 DeepSeek API 已支持 Claude CLI，但 **OpenCode.ai 的接口不完全兼容**，本项目同样为 Claude CLI 提供协议转换支持。
-
-**支持的客户端 × 上游组合**：
-
-- `/v1/responses` → Codex CLI（翻译 Responses API → Chat Completions）
-- `/v1/messages` → Claude CLI（翻译 Messages API → Chat Completions）
-- 上游支持：原生 DeepSeek API、OpenCode.ai
+- **Codex CLI**：通过本代理同时支持 **DeepSeek** 和 **OpenCode.ai**（翻译 Responses API → Chat Completions）
+- **Claude CLI**：原生 DeepSeek API 已支持，本项目重点解决 **OpenCode.ai 的兼容问题**（翻译 Messages API → Chat Completions）
 
 ## 快速开始
 
