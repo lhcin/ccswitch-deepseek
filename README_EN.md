@@ -69,8 +69,7 @@ Once running, start Codex CLI or Claude CLI to connect through this proxy to Dee
 | `patch-index.cjs` | Patch script for index.js |
 | `patch-recover.cjs` | Patch script for recover.js |
 | `test_translate.js` | 29 unit tests |
-| `start.bat` | Windows launch scripts |
-| `setup-autostart.ps1` / `setup-autostart-user.ps1` | Autostart configuration |
+| `start.bat` | Windows launch script |
 
 ## Translations
 
