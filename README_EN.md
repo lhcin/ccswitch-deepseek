@@ -1,4 +1,4 @@
-﻿# ccswitch-deepseek
+# ccswitch-deepseek
 
 [中文](README.md)
 
@@ -8,23 +8,38 @@ Codex CLI -> DeepSeek proxy. Translates OpenAI Responses API to DeepSeek Chat Co
 
 ## Quick Start
 
-Install:
+### 1. Install Node.js
+
+This project requires Node.js. Download and install the latest LTS version from [nodejs.org](https://nodejs.org/).
+
+Verify the installation in your terminal:
+
+```bash
+node --version
+npm --version
+```
+
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-Edit `.env`:
+### 3. Configure API Key
+
+Copy `env_example` and rename it to `.env`, then edit:
 
 ```
 api_key=sk-your-deepseek-api-key
 ```
 
-Start:
+### 4. Start the Service
 
 ```bash
 npm start
 ```
+
+Once running, Codex CLI will automatically connect to DeepSeek through this proxy.
 
 ## Files
 
@@ -34,8 +49,13 @@ npm start
 | `lib/log.js` | Colored logging |
 | `lib/translate.js` | Input translation (Responses -> Chat) |
 | `lib/sse.js` | SSE event translation (Chat -> Responses) |
+| `lib/sse-messages.js` | SSE message builder |
 | `lib/recover.js` | reasoning_content auto-restore |
-| `test_translate.js` | 29 unit tests |
+| `patch-index.cjs` | Patch script for index.js |
+| `patch-recover.cjs` | Patch script for recover.js |
+| `test_translate.js` | 33 unit tests |
+| `start.bat` / `start-hidden.vbs` | Windows launch scripts |
+| `setup-autostart.ps1` / `setup-autostart-user.ps1` | Autostart configuration |
 
 ## Translations
 
@@ -72,9 +92,8 @@ npm start
 npm run test:translate
 ```
 
-29 unit tests covering all translation logic.
+33 unit tests covering all translation logic.
 
 ## License
 
 ISC
-

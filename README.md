@@ -1,4 +1,4 @@
-﻿# ccswitch-deepseek
+# ccswitch-deepseek
 
 [English](README_EN.md)
 
@@ -10,23 +10,42 @@ Codex 使用 OpenAI Responses API 协议，DeepSeek 只提供 Chat Completions A
 
 ## 快速开始
 
-安装依赖：
+### 1. 安装 Node.js
+
+本项目需要 Node.js 环境。请访问 [Node.js 官网](https://nodejs.org/) 下载并安装最新 LTS 版本。
+
+安装完成后，在命令行中验证：
+
+（在这个项目文件夹中点击右键出现菜单打开命令行）
+
+![在终端中打开](./image.png)
+
+```bash
+node --version
+npm --version
+```
+
+### 2. 安装依赖
 
 ```bash
 npm install
 ```
 
-编辑 `.env`：
+### 3. 配置 API Key
+
+复制 `env_example` 后命名为 `.env` 并编辑：
 
 ```
 api_key=sk-your-deepseek-api-key
 ```
 
-启动：
+### 4. 启动服务
 
 ```bash
 npm start
 ```
+
+服务启动后，运行 Codex CLI 即可自动通过本代理连接 DeepSeek。
 
 ## 文件结构
 
@@ -36,8 +55,13 @@ npm start
 | `lib/log.js` | 彩色日志工具 |
 | `lib/translate.js` | 输入翻译 (Responses -> Chat) |
 | `lib/sse.js` | SSE 事件翻译 (Chat -> Responses) |
+| `lib/sse-messages.js` | SSE 消息构建工具 |
 | `lib/recover.js` | reasoning_content 自动记忆与补回 |
-| `test_translate.js` | 翻译逻辑单元测试 (29 用例) |
+| `patch-index.cjs` | index.js 补丁脚本 |
+| `patch-recover.cjs` | recover.js 补丁脚本 |
+| `test_translate.js` | 翻译逻辑单元测试 (33 用例) |
+| `start.bat` / `start-hidden.vbs` | Windows 启动脚本 |
+| `setup-autostart.ps1` / `setup-autostart-user.ps1` | 开机自启动配置 |
 
 ## 翻译覆盖
 
@@ -74,9 +98,8 @@ npm start
 npm run test:translate
 ```
 
-29 个翻译逻辑单元测试，不依赖网络。
+33 个翻译逻辑单元测试，不依赖网络。
 
 ## License
 
 ISC
-
