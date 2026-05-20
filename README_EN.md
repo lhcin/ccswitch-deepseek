@@ -35,7 +35,7 @@ npm start
 | `lib/translate.js` | Input translation (Responses -> Chat) |
 | `lib/sse.js` | SSE event translation (Chat -> Responses) |
 | `lib/recover.js` | reasoning_content auto-restore |
-| `test_translate.js` | 33 unit tests |
+| `test_translate.js` | 29 unit tests |
 
 ## Translations
 
@@ -72,7 +72,7 @@ npm start
 npm run test:translate
 ```
 
-33 unit tests covering all translation logic.
+29 unit tests covering all translation logic.
 
 ## License
 

@@ -37,7 +37,7 @@ npm start
 | `lib/translate.js` | 输入翻译 (Responses -> Chat) |
 | `lib/sse.js` | SSE 事件翻译 (Chat -> Responses) |
 | `lib/recover.js` | reasoning_content 自动记忆与补回 |
-| `test_translate.js` | 翻译逻辑单元测试 (33 用例) |
+| `test_translate.js` | 翻译逻辑单元测试 (29 用例) |
 
 ## 翻译覆盖
 
@@ -74,7 +74,7 @@ npm start
 npm run test:translate
 ```
 
-33 个翻译逻辑单元测试，不依赖网络。
+29 个翻译逻辑单元测试，不依赖网络。
 
 ## License
 
