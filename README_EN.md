@@ -4,7 +4,7 @@
 
 ---
 
-Codex CLI / Claude CLI -> DeepSeek proxy. Translates OpenAI Responses API and Anthropic Messages API to DeepSeek Chat Completions API.
+Codex CLI / Claude CLI -> OpenCode.ai DeepSeek proxy. The native DeepSeek API supports Claude CLI, but **OpenCode.ai's interface is not fully compatible**. This project runs a local protocol translation proxy, converting OpenCode.ai's Chat Completions format to what Codex and Claude CLI expect.
 
 **Supported clients**:
 
