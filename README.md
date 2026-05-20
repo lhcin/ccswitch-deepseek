@@ -14,8 +14,6 @@ Codex 使用 OpenAI Responses API，Claude 使用 Anthropic Messages API。DeepS
 - `/v1/messages` → Claude CLI（翻译 Messages API → Chat Completions）
 - 上游支持：原生 DeepSeek API、OpenCode.ai
 
-> DeepSeek 原生 API 已支持 Claude CLI，本项目的主要价值是让 **Claude CLI 也能使用 OpenCode.ai**。
-
 ## 快速开始
 
 ### 1. 安装 Node.js
