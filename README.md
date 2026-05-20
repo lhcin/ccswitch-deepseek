@@ -46,7 +46,19 @@ api_key=sk-your-deepseek-api-key
 npm start
 ```
 
-服务启动后，运行 Codex CLI 即可自动通过本代理连接 DeepSeek。
+服务启动后，运行 Codex CLI 或 Claude CLI 即可通过本代理连接 DeepSeek / OpenCode.ai。
+
+## 环境变量
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `api_key` | (必填) | API Key |
+| `model` | `deepseek-v4-flash` | 模型名 |
+| `port` | `11435` | 服务端口 |
+| `base_url` | `https://opencode.ai/zen/go/v1` | 上游 API 地址 |
+| `is_deepseek` | `true` | 是否注入身份提示 |
+| `skip_title_gen` | `true` | 是否跳过标题生成拦截 |
+| `max_body_size` | `10485760` | 最大请求体大小 (10MB) |
 
 ## 文件结构
 
@@ -56,17 +68,19 @@ npm start
 | `lib/log.js` | 彩色日志工具 |
 | `lib/translate.js` | 输入翻译 (Responses -> Chat) |
 | `lib/sse.js` | SSE 事件翻译 (Chat -> Responses) |
-| `lib/sse-messages.js` | SSE 消息构建工具 |
+| `lib/sse-messages.js` | SSE 消息构建 (Messages API) |
 | `lib/recover.js` | reasoning_content 自动记忆与补回 |
 | `patch-index.cjs` | index.js 补丁脚本 |
 | `patch-recover.cjs` | recover.js 补丁脚本 |
-| `test_translate.js` | 翻译逻辑单元测试 (33 用例) |
+| `test_translate.js` | 翻译逻辑单元测试 (29 用例) |
 | `start.bat` / `start-hidden.vbs` | Windows 启动脚本 |
 | `setup-autostart.ps1` / `setup-autostart-user.ps1` | 开机自启动配置 |
 
 ## 翻译覆盖
 
-### 输入 (Responses -> Chat Completions)
+### Codex CLI（Responses API → Chat Completions）
+
+#### 输入翻译
 
 - message items (`input_text` / `output_text` / `reasoning_text`)
 - `function_call` -> assistant `tool_calls`
@@ -76,7 +90,7 @@ npm start
 - `input_image` -> `image_url`（多模态）
 - `input_file` / `input_audio` -> 跳过统计
 
-### 输出 (Chat Completions -> Responses SSE)
+#### 输出翻译 (Chat Completions -> Responses SSE)
 
 - `response.created` / `in_progress` / `completed`
 - `output_item.added` / `done`
@@ -85,7 +99,7 @@ npm start
 - `function_call_arguments.delta` / `done`
 - `usage` token 统计（`response.completed` 中）
 
-### 请求参数
+#### 请求参数
 
 - `instructions` -> system message
 - `temperature` / `top_p` / `max_output_tokens` 透传
@@ -93,13 +107,31 @@ npm start
 - `thinking` / `reasoning` -> DeepSeek thinking 模式
 - `reasoning_content` 跨轮次自动补回
 
+### Claude CLI（Messages API → Chat Completions）
+
+#### 输入翻译
+
+- `system` (string / content array) -> system message
+- `user` message (text content array) -> user message
+- `assistant` reasoning_content -> Chat Completions `reasoning_content`
+- `assistant` tool_calls -> Chat Completions `tool_calls`
+- `tool` message -> `tool` role message
+
+#### 输出翻译 (Chat Completions -> Messages API JSON)
+
+- `id` / `object` / `model` / `created` 构建
+- `content` (text blocks) 组装
+- `tool_use` blocks (id, name, input)
+- `stop_reason` 映射 (tool_calls -> tool_use, length -> max_tokens, stop -> end_turn)
+- `usage` (input_tokens, output_tokens)
+
 ## 运行测试
 
 ```bash
 npm run test:translate
 ```
 
-33 个翻译逻辑单元测试，不依赖网络。
+29 个翻译逻辑单元测试（覆盖 Responses API 翻译），不依赖网络。
 
 ## License
 

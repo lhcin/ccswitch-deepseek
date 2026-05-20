@@ -42,7 +42,19 @@ api_key=sk-your-deepseek-api-key
 npm start
 ```
 
-Once running, Codex CLI will automatically connect to DeepSeek through this proxy.
+Once running, start Codex CLI or Claude CLI to connect through this proxy to DeepSeek / OpenCode.ai.
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `api_key` | (required) | API Key |
+| `model` | `deepseek-v4-flash` | Model name |
+| `port` | `11435` | Server port |
+| `base_url` | `https://opencode.ai/zen/go/v1` | Upstream API URL |
+| `is_deepseek` | `true` | Inject identity prompt |
+| `skip_title_gen` | `true` | Skip title generation intercept |
+| `max_body_size` | `10485760` | Max request body size (10MB) |
 
 ## Files
 
@@ -62,7 +74,9 @@ Once running, Codex CLI will automatically connect to DeepSeek through this prox
 
 ## Translations
 
-### Input (Responses -> Chat Completions)
+### Codex CLI (Responses API → Chat Completions)
+
+#### Input Translation
 
 - message items (`input_text` / `output_text` / `reasoning_text`)
 - `function_call` -> assistant `tool_calls`
@@ -72,7 +86,7 @@ Once running, Codex CLI will automatically connect to DeepSeek through this prox
 - `input_image` -> `image_url` (multimodal)
 - `input_file` / `input_audio` -> skip with stats
 
-### Output (Chat Completions -> Responses SSE)
+#### Output Translation (Chat Completions -> Responses SSE)
 
 - `response.created` / `in_progress` / `completed`
 - `output_item.added` / `done`
@@ -81,7 +95,7 @@ Once running, Codex CLI will automatically connect to DeepSeek through this prox
 - `function_call_arguments.delta` / `done`
 - `usage` (token stats) in `response.completed`
 
-### Parameters
+#### Parameters
 
 - `instructions` -> system message
 - `temperature` / `top_p` / `max_output_tokens` passthrough
@@ -89,13 +103,31 @@ Once running, Codex CLI will automatically connect to DeepSeek through this prox
 - `thinking` / `reasoning` -> DeepSeek thinking mode
 - `reasoning_content` auto-restore across rounds
 
+### Claude CLI (Messages API → Chat Completions)
+
+#### Input Translation
+
+- `system` (string / content array) -> system message
+- `user` message (text content array) -> user message
+- `assistant` reasoning_content -> Chat Completions `reasoning_content`
+- `assistant` tool_calls -> Chat Completions `tool_calls`
+- `tool` message -> `tool` role message
+
+#### Output Translation (Chat Completions -> Messages API JSON)
+
+- `id` / `object` / `model` / `created` construction
+- `content` (text blocks) assembly
+- `tool_use` blocks (id, name, input)
+- `stop_reason` mapping (tool_calls -> tool_use, length -> max_tokens, stop -> end_turn)
+- `usage` (input_tokens, output_tokens)
+
 ## Tests
 
 ```bash
 npm run test:translate
 ```
 
-33 unit tests covering all translation logic.
+29 unit tests covering Responses API translation logic.
 
 ## License
 
