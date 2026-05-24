@@ -1,6 +1,7 @@
 import http from "node:http";
 import crypto from "node:crypto";
 import https from "node:https";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -60,8 +61,8 @@ function buildChatBody(body) {
   const preview = lastUser.length > 120 ? lastUser.slice(0, 120) + "..." : lastUser;
   log.req("[" + source + "] model:" + requestedModel + " thinking:" + (enableThinking ? "on" : "off") + " msgs:" + messages.length + " stream:" + stream + " | " + preview);
   const IDENTITY = buildIdentityPrompt(requestedModel);
-  let instructions = body.instructions ? body.instructions + IDENTITY : IDENTITY.trim();
-  messages.unshift({ role: "system", content: instructions });
+  const instructions = body.instructions ? body.instructions + IDENTITY : IDENTITY.trim();
+  if (instructions) messages.unshift({ role: "system", content: instructions });
   const chatBody = { model: requestedModel, messages, stream };
   if (effectiveThinking) { chatBody.thinking = { type: "enabled" }; }
   else { chatBody.thinking = { type: "disabled" }; }
@@ -131,7 +132,10 @@ function buildMessagesBody(body) {
   log.req("[" + source + "] model:" + requestedModel + " thinking:" + (enableThinking ? "on" : "off") + " msgs:" + msgs.length + " stream:" + stream + " | " + preview);
 
   const IDENTITY = buildIdentityPrompt(requestedModel);
-  msgs.unshift({ role: "system", content: IDENTITY });
+  if (IDENTITY) {
+    if (msgs[0]?.role === "system") msgs[0].content = (msgs[0].content || "") + IDENTITY;
+    else msgs.unshift({ role: "system", content: IDENTITY.trim() });
+  }
 
   const chatBody = { model: requestedModel, messages: msgs, stream };
   if (enableThinking) { chatBody.thinking = { type: "enabled" }; }
@@ -149,6 +153,7 @@ function buildMessagesResponse(completion) {
   const usage = completion.usage;
   const stopReason = (() => { const fr = completion.choices?.[0]?.finish_reason; if (fr === "tool_calls") return "tool_use"; if (fr === "length") return "max_tokens"; if (fr === "stop") return "end_turn"; if (fr === "stop_sequence") return "stop_sequence"; return "end_turn"; })();
   const content = [];
+  if (msg?.reasoning_content) content.push({ type: "thinking", thinking: msg.reasoning_content });
   if (msg?.content) content.push({ type: "text", text: msg.content });
   if (msg?.tool_calls) for (const tc of msg.tool_calls) {
     let parsed = {};
@@ -299,7 +304,11 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, "127.0.0.1", () => {
+export { resolveModel, buildIdentityPrompt, buildChatBody, buildNonStreamResponse, buildMessagesBody, buildMessagesResponse };
+
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isMain) server.listen(PORT, "127.0.0.1", () => {
   console.log("");
   log.ok("ccswitch-deepseek started");
   log.info("http://127.0.0.1:" + PORT + "/v1/responses  → Codex");
@@ -310,5 +319,8 @@ server.listen(PORT, "127.0.0.1", () => {
   console.log("");
 });
 
-process.on("SIGINT", () => { log.info("shutting down..."); server.closeAllConnections?.(); server.close(() => process.exit(0)); });
-process.on("SIGTERM", () => { log.info("shutting down..."); server.closeAllConnections?.(); server.close(() => process.exit(0)); });
+
+if (isMain) {
+  process.on("SIGINT", () => { log.info("shutting down..."); server.closeAllConnections?.(); server.close(() => process.exit(0)); });
+  process.on("SIGTERM", () => { log.info("shutting down..."); server.closeAllConnections?.(); server.close(() => process.exit(0)); });
+}

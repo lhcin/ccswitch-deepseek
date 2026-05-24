@@ -1,6 +1,31 @@
-﻿import { test } from "node:test";
+import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { extractText, translateMessages, translateTools, translateToolChoice, lastUserText } from "./lib/translate.js";
+import { SseTranslator } from "./lib/sse.js";
+import { MessagesSseTranslator } from "./lib/sse-messages.js";
+
+function createSseSink() {
+  return {
+    chunks: [],
+    ended: false,
+    write(chunk) { this.chunks.push(String(chunk)); },
+    end() { this.ended = true; },
+  };
+}
+
+function parseSseEvents(sink) {
+  return sink.chunks.join("").trim().split(/\n\n/).filter(Boolean).map((block) => {
+    const lines = block.split("\n");
+    const event = lines.find((line) => line.startsWith("event: "))?.slice(7);
+    const dataLine = lines.find((line) => line.startsWith("data: "));
+    return { event, data: dataLine ? JSON.parse(dataLine.slice(6)) : null };
+  });
+}
+
+function findSseEvent(sink, eventName, predicate = () => true) {
+  return parseSseEvents(sink).find((entry) => entry.event === eventName && predicate(entry.data));
+}
 
 test("extractText - string", () => { assert.equal(extractText("hello"), "hello"); });
 test("extractText - non-array", () => { assert.equal(extractText({a:1}), ""); assert.equal(extractText(123), ""); });
@@ -36,5 +61,65 @@ test("translateToolChoice - object", () => { const r = translateToolChoice({type
 test("lastUserText - found", () => { assert.equal(lastUserText([{role:"user",content:"q1"},{role:"assistant",content:"a"},{role:"user",content:"q2"}]), "q2"); });
 test("lastUserText - not found", () => { assert.equal(lastUserText([]), ""); });
 
+
+test("SseTranslator preserves usage-only final chunks", () => {
+  const sink = createSseSink();
+  const translator = new SseTranslator(sink, "deepseek-chat");
+  translator.feed({ usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 } });
+  translator.done();
+
+  const completed = findSseEvent(sink, "response.completed");
+  assert.deepEqual(completed.data.response.usage, { input_tokens: 10, output_tokens: 5, total_tokens: 15 });
+});
+
+test("SseTranslator reports the resolved request model", () => {
+  const sink = createSseSink();
+  const translator = new SseTranslator(sink, "deepseek-custom");
+  translator.feed({ choices: [{ delta: { content: "hi" } }] });
+  translator.done();
+
+  assert.equal(findSseEvent(sink, "response.created").data.response.model, "deepseek-custom");
+  assert.equal(findSseEvent(sink, "response.completed").data.response.model, "deepseek-custom");
+});
+
+test("MessagesSseTranslator initializes thinking blocks with string content", () => {
+  const sink = createSseSink();
+  const translator = new MessagesSseTranslator(sink);
+  translator.feed({ choices: [{ delta: { reasoning_content: "think" } }] });
+  translator.done();
+
+  const thinkingStart = findSseEvent(sink, "content_block_start", (data) => data.content_block.type === "thinking");
+  const thinkingDelta = findSseEvent(sink, "content_block_delta", (data) => data.delta.type === "thinking_delta");
+  assert.equal(thinkingStart.data.content_block.thinking, "");
+  assert.equal(thinkingDelta.data.delta.thinking, "think");
+});
+
+test("index builders are importable and preserve Messages thinking/system semantics", () => {
+  const script = String.raw`
+    import('./index.js').then(({ buildChatBody, buildMessagesBody, buildMessagesResponse }) => {
+      if (typeof buildChatBody !== 'function' || typeof buildMessagesBody !== 'function' || typeof buildMessagesResponse !== 'function') process.exit(1);
+
+      const codex = buildChatBody({ model: 'deepseek-chat', input: 'hello', stream: false });
+      if (codex.chatBody.messages.some((m) => m.role === 'system' && m.content === '')) process.exit(2);
+
+      const messages = buildMessagesBody({ model: 'claude-3-5-sonnet', system: 'sys', messages: [], stream: false });
+      const systemMessages = messages.chatBody.messages.filter((m) => m.role === 'system');
+      if (systemMessages.length !== 1 || systemMessages[0].content !== 'sys') process.exit(3);
+
+      const response = buildMessagesResponse({ choices: [{ message: { reasoning_content: 'reason', content: 'answer' }, finish_reason: 'stop' }] });
+      if (response.content[0]?.type !== 'thinking' || response.content[0]?.thinking !== 'reason') process.exit(4);
+      if (response.content[1]?.type !== 'text' || response.content[1]?.text !== 'answer') process.exit(5);
+      process.exit(0);
+    }).catch((error) => { console.error(error); process.exit(6); });
+  `;
+  execFileSync(process.execPath, ["--input-type=module", "-e", script], {
+    cwd: process.cwd(),
+    env: { ...process.env, is_deepseek: "false", port: "0" },
+    stdio: "pipe",
+    timeout: 5000,
+  });
+});
+
 console.log("\nall tests passed!");
+
 

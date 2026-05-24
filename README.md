@@ -34,7 +34,7 @@ npm install
 
 ### 3. 配置 API Key
 
-复制 `env_example` 后命名为 `.env` 并编辑：
+复制 `.env_example` 后命名为 `.env` 并编辑：
 
 ```
 api_key=sk-your-deepseek-api-key
@@ -70,8 +70,6 @@ npm start
 | `lib/sse.js` | SSE 事件翻译 (Chat -> Responses) |
 | `lib/sse-messages.js` | SSE 消息构建 (Messages API) |
 | `lib/recover.js` | reasoning_content 自动记忆与补回 |
-| `patch-index.cjs` | index.js 补丁脚本 |
-| `patch-recover.cjs` | recover.js 补丁脚本 |
 | `test_translate.js` | 翻译逻辑单元测试 (29 用例) |
 | `start.bat` | Windows 启动脚本 |
 

@@ -30,7 +30,7 @@ npm install
 
 ### 3. Configure API Key
 
-Copy `env_example` and rename it to `.env`, then edit:
+Copy `.env_example` and rename it to `.env`, then edit:
 
 ```
 api_key=sk-your-deepseek-api-key
@@ -66,8 +66,6 @@ Once running, start Codex CLI or Claude CLI to connect through this proxy to Dee
 | `lib/sse.js` | SSE event translation (Chat -> Responses) |
 | `lib/sse-messages.js` | SSE message builder |
 | `lib/recover.js` | reasoning_content auto-restore |
-| `patch-index.cjs` | Patch script for index.js |
-| `patch-recover.cjs` | Patch script for recover.js |
 | `test_translate.js` | 29 unit tests |
 | `start.bat` | Windows launch script |
 
